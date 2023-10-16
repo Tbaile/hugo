@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  push:
+    branches: 'main'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 0'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: hugo ${{ matrix.version }} ${{ matrix.extended == true && ' extended ' || ' ' }}on ${{ matrix.target }}
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        version: [0.119.0]
+        extended: [true, false]
+        target: [debian, alpine, ubuntu]
+        exclude:
+          - extended: true
+            target: alpine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Generate Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/tbaile/hugo
+            tbaile/hugo
+          bake-target: build
+          flavor: |
+            latest=false
+            suffix=${{ matrix.extended == true && '-extended' || '' }}-${{ matrix.target }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ matrix.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.version }}
+            type=semver,pattern={{major}},enable=${{ !startsWith(matrix.version, '0.') }},value=${{ matrix.version }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image
+        uses: docker/bake-action@v4
+        env:
+          VERSION: ${{ matrix.version }}
+          EXTENDED: ${{ matrix.extended }}
+          TARGET: ${{ matrix.target }}
+        with:
+          files: |
+            docker-bake.hcl
+            ${{ steps.meta.outputs.bake-file }}
+          targets: build
+          provenance: false
+          set: |
+            build.cache-to=type=gha,mode=max
+            build.cache-from=type=gha
+          push: true
