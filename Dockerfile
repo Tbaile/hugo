@@ -1,17 +1,22 @@
-ARG BASE_IMAGE
-ARG BASE_TAG
-
+# downloder of bin
 FROM debian:latest as downloader
-ARG HUGO_VERSION
 WORKDIR /hugo
-COPY checksums/hugo_${HUGO_VERSION}_checksums.txt .
+# copy checksums of given version
+ARG VERSION
+COPY checksums/hugo_${VERSION}_checksums.txt .
+# get arch
 ARG TARGETARCH
-ARG HUGO_TYPE
-ARG HUGO_EXTENDED
-ENV HUGO_FILE=hugo_${HUGO_EXTENDED}${HUGO_VERSION}_linux-${TARGETARCH}.tar.gz
-ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_FILE} ${HUGO_FILE}
-RUN sha256sum --ignore-missing --check hugo_${HUGO_VERSION}_checksums.txt \
+ARG EXTENDED
+ARG HUGO_FILE=hugo${EXTENDED}_${VERSION}_linux-${TARGETARCH}.tar.gz
+ADD https://github.com/gohugoio/hugo/releases/download/v${VERSION}/${HUGO_FILE} ${HUGO_FILE}
+RUN sha256sum --ignore-missing --check hugo_${VERSION}_checksums.txt \
     && tar xvf ${HUGO_FILE} hugo
+    
+FROM alpine:3.18.4 as alpine
+COPY --from=downloader /hugo/hugo /usr/local/bin/hugo
 
-FROM ${BASE_IMAGE}:${BASE_TAG}
+FROM debian:12.1 as debian
+COPY --from=downloader /hugo/hugo /usr/local/bin/hugo
+
+FROM ubuntu:22.04 as ubuntu
 COPY --from=downloader /hugo/hugo /usr/local/bin/hugo
