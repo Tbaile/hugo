@@ -13,4 +13,5 @@ target "build" {
         VERSION = VERSION
         EXTENDED = equal(EXTENDED, true) ? "_extended" : ""
     }
+    platforms = ["linux/amd64", "linux/arm64"]
 }
