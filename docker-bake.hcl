@@ -5,7 +5,6 @@ variable "VERSION" {
 target "default" {
     name = join("", ["hugo-${base}", equal(extended, true) ? "-extended" : ""])
     matrix = {
-        version = ["0.121.2", "0.119.0"]
         extended = [true, false]
         base = ["debian", "ubuntu"]
     }
