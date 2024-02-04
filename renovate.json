@@ -20,7 +20,8 @@
         "variable \"VERSION\" {\\s+default = \"(?<currentValue>.*?)\""
       ],
       "depNameTemplate": "gohugoio/hugo",
-      "datasourceTemplate": "github-releases"
+      "datasourceTemplate": "github-releases",
+      "extractVersion": "^v(?<version>.*)$"
     }
   ]
 }
