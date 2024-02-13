@@ -13,7 +13,7 @@ ADD https://github.com/gohugoio/hugo/releases/download/v${VERSION}/${HUGO_FILE} 
 RUN sha256sum --ignore-missing --check hugo_${VERSION}_checksums.txt \
     && tar xvf ${HUGO_FILE} hugo
 
-FROM debian:12.4 as debian
+FROM debian:12.5 as debian
 COPY --from=downloader /hugo/hugo /usr/local/bin/hugo
 WORKDIR /app
 
