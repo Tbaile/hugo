@@ -14,6 +14,15 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        hugo-version: [
+            0.121.1,
+            0.121.2,
+            0.122.0,
+            0.123.0,
+            0.123.1
+          ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -27,6 +36,8 @@ jobs:
 
       - name: Build image
         uses: docker/bake-action@v4
+        env:
+          VERSION: ${{ matrix.hugo-version }}
         with:
           set: |
             *.cache-to=type=gha,mode=max
