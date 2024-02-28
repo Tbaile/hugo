@@ -1,5 +1,5 @@
 variable "VERSION" {
-    default = "0.123.2"
+    default = "0.123.4"
 }
 
 target "default" {

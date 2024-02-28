@@ -17,11 +17,11 @@ jobs:
     strategy:
       matrix:
         hugo-version: [
+            0.123.4,
+            0.123.3,
             0.123.2,
             0.123.1,
-            0.123.0,
-            0.122.0,
-            0.121.2
+            0.123.0
           ]
     steps:
       - uses: actions/checkout@v4
